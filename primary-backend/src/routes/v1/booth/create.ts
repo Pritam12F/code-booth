@@ -4,8 +4,6 @@ import { prisma } from "../../../db";
 
 const createBoothHandler = express.Router();
 
-createBoothHandler.post("/", requireAuth(), async (req, res) => {
-  const res = await prisma.user;
-});
+createBoothHandler.post("/", requireAuth(), async (req, res) => {});
 
 export { createBoothHandler };
