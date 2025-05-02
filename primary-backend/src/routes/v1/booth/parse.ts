@@ -1,11 +1,11 @@
-import { Router } from "express";
-import express from "express";
-import { prisma } from "../../../db";
 import { requireAuth } from "@clerk/express";
+import express from "express";
+import { CodeSchema } from "../../../schema";
+import { codeQueue } from "../../../queue";
 
-export const fetchAllBoothHandler: Router = express.Router();
+export const parseHandler = express.Router();
 
-fetchAllBoothHandler.post(
+parseHandler.post(
   "/",
   requireAuth({ signInUrl: process.env.CLERK_SIGN_IN_URL }),
   async (req, res) => {
@@ -21,23 +21,24 @@ fetchAllBoothHandler.post(
       return;
     }
 
+    const { success, data } = CodeSchema.safeParse(req.body);
+
+    if (!success) {
+      res
+        .json({
+          message: "Invalid inputs",
+        })
+        .status(411);
+
+      return;
+    }
     try {
-      const booths = await prisma.booth.findMany({
-        where: {
-          OR: [
-            {
-              interviewerId: userId,
-            },
-            {
-              intervieweeId: userId,
-            },
-          ],
-        },
+      await codeQueue.add({
+        ...data,
       });
 
       res.json({
-        message: "Successfully fetched booths",
-        booths,
+        message: "Code has been pushed to queue",
       });
     } catch (err) {
       const message =

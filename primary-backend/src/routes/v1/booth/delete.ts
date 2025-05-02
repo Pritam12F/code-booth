@@ -4,9 +4,9 @@ import { DeleteBoothSchema } from "../../../schema";
 import { prisma } from "../../../db";
 import { requireAuth } from "@clerk/express";
 
-export const deleteBoothRouter: Router = express.Router();
+export const deleteBoothHandler: Router = express.Router();
 
-deleteBoothRouter.post(
+deleteBoothHandler.post(
   "/",
   requireAuth({ signInUrl: process.env.CLERK_SIGN_IN_URL }),
   async (req, res) => {

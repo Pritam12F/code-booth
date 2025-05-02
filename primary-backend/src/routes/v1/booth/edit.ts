@@ -2,89 +2,94 @@ import { Router } from "express";
 import express from "express";
 import { UpdateBoothSchema } from "../../../schema";
 import { prisma } from "../../../db";
+import { requireAuth } from "@clerk/express";
 
 export const editBoothHandler: Router = express.Router();
 
-editBoothHandler.post("/", async (req, res) => {
-  const { success, data } = UpdateBoothSchema.safeParse(req.body);
-  const userId = req.auth.userId;
+editBoothHandler.post(
+  "/",
+  requireAuth({ signInUrl: process.env.CLERK_SIGN_IN_URL }),
+  async (req, res) => {
+    const { success, data } = UpdateBoothSchema.safeParse(req.body);
+    const userId = req.auth.userId;
 
-  if (!success) {
-    res
-      .json({
-        message: "Invalid inputs",
-      })
-      .status(411);
-
-    return;
-  }
-
-  if (!userId) {
-    res
-      .json({
-        message: "User ID not provided",
-      })
-      .status(401);
-
-    return;
-  }
-
-  try {
-    const user = await prisma.user.findUniqueOrThrow({
-      where: {
-        id: userId,
-      },
-      include: {
-        booths: true,
-      },
-    });
-
-    const hasAccess = user.booths.some(
-      (x) => x.interviewerId === userId && x.id === data.boothId
-    );
-
-    if (!hasAccess) {
+    if (!success) {
       res
         .json({
-          message: "User doesn't have access to this booth",
+          message: "Invalid inputs",
         })
-        .status(405);
+        .status(411);
+
+      return;
     }
 
-    await prisma.booth.update({
-      where: {
-        id: data.boothId,
-      },
-      data: {
-        title: data.title,
-        passed: data.passed,
-      },
-    });
+    if (!userId) {
+      res
+        .json({
+          message: "User ID not provided",
+        })
+        .status(401);
 
-    data.tasks?.map(async ({ taskId, content }) => {
-      await prisma.task.update({
+      return;
+    }
+
+    try {
+      const user = await prisma.user.findUniqueOrThrow({
         where: {
-          id: taskId,
+          id: userId,
         },
-        data: {
-          name: content,
+        include: {
+          booths: true,
         },
       });
-    });
 
-    res.json({
-      message: "Updated booth!",
-    });
-  } catch (err) {
-    const message =
-      err instanceof Error
-        ? err.message
-        : "Error occured trying to update booth";
+      const hasAccess = user.booths.some(
+        (x) => x.interviewerId === userId && x.id === data.boothId
+      );
 
-    res
-      .json({
-        message,
-      })
-      .status(400);
+      if (!hasAccess) {
+        res
+          .json({
+            message: "User doesn't have access to this booth",
+          })
+          .status(405);
+      }
+
+      await prisma.booth.update({
+        where: {
+          id: data.boothId,
+        },
+        data: {
+          title: data.title,
+          passed: data.passed,
+        },
+      });
+
+      data.tasks?.map(async ({ taskId, content }) => {
+        await prisma.task.update({
+          where: {
+            id: taskId,
+          },
+          data: {
+            name: content,
+          },
+        });
+      });
+
+      res.json({
+        message: "Updated booth!",
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Error occured trying to update booth";
+
+      res
+        .json({
+          message,
+        })
+        .status(400);
+    }
   }
-});
+);
