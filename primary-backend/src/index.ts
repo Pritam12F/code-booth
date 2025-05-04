@@ -6,6 +6,7 @@ import WebSocket, { WebSocketServer } from "ws";
 const app = express();
 const PORT = 3000;
 
+app.use(express.json());
 app.use("/v1", v1Router);
 
 const httpServer = app.listen(PORT);
