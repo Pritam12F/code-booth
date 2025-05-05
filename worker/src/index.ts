@@ -14,7 +14,13 @@ const processCodeQueue = async (job: Job) => {
 
   const review = await getReviewAndRating(HTML, CSS, JS, Tasks);
 
-  socket.send(JSON.stringify(review));
+  socket.send(
+    JSON.stringify({
+      boothID: BoothID,
+      review: review.review,
+      rating: review.rating,
+    })
+  );
 };
 
 codeQueue.process(processCodeQueue);
