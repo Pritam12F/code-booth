@@ -66,4 +66,5 @@ export const CodeSchema = z.object({
   HTML: z.string(),
   CSS: z.string(),
   JS: z.string(),
+  Tasks: z.array(z.string()),
 });

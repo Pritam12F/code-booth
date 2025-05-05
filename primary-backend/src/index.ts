@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { v1Router } from "./routes/v1";
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 
 const app = express();
 const PORT = 3000;
