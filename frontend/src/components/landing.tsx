@@ -1,4 +1,3 @@
-"use client";
 import {
   Navbar,
   NavBody,
@@ -14,7 +13,7 @@ import { useState } from "react";
 import { Hero } from "./hero";
 import { SignInButton, SignUpButton } from "@clerk/clerk-react";
 
-export function NavbarSection() {
+export function LandingPage() {
   const navItems = [
     {
       name: "Features",
@@ -92,7 +91,6 @@ export function NavbarSection() {
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
-
       <Hero />
     </div>
   );

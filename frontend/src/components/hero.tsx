@@ -1,14 +1,31 @@
-import { BackgroundLines } from "@/components/ui/background-lines";
+import { motion } from "motion/react";
+import { HeroHighlight, Highlight } from "./ui/hero-highlight";
 
 export function Hero() {
   return (
-    <BackgroundLines className="flex h-screen items-center justify-center w-full flex-col px-4">
-      <h2 className="bg-clip-text text-transparent text-center bg-gradient-to-b from-neutral-900 to-neutral-700 dark:from-neutral-600 dark:to-white text-2xl md:text-4xl lg:text-7xl font-sans py-2 md:py-10 relative z-20 font-bold tracking-tight">
-        Code Booth
-      </h2>
-      <p className="max-w-xl mx-auto text-sm md:text-lg text-neutral-700 dark:text-neutral-400 text-center">
-        Conduct coding assessments the way they are meant to be
-      </p>
-    </BackgroundLines>
+    <HeroHighlight>
+      <motion.h1
+        initial={{
+          opacity: 0,
+          y: 20,
+        }}
+        animate={{
+          opacity: 1,
+          y: [20, -5, 0],
+        }}
+        transition={{
+          duration: 0.5,
+          ease: [0.4, 0.0, 0.2, 1],
+        }}
+        className="text-2xl px-4 md:text-4xl lg:text-5xl font-bold text-neutral-700 dark:text-white max-w-4xl leading-relaxed lg:leading-snug text-center mx-auto"
+      >
+        Conduct web dev coding rounds
+        <br />
+        the way{" "}
+        <Highlight className="text-black dark:text-white">
+          they are meant to be
+        </Highlight>
+      </motion.h1>
+    </HeroHighlight>
   );
 }
