@@ -5,7 +5,7 @@ import { requireAuth } from "@clerk/express";
 
 export const fetchAllBoothHandler: Router = express.Router();
 
-fetchAllBoothHandler.post(
+fetchAllBoothHandler.get(
   "/",
   requireAuth({ signInUrl: process.env.CLERK_SIGN_IN_URL }),
   async (req, res) => {
