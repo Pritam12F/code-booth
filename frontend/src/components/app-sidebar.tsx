@@ -1,64 +1,48 @@
-import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
-
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-];
+import { SidebarUser } from "./sidebar-user";
+import { useQuery } from "@tanstack/react-query";
+import { fetchAllBooths } from "@/api/booth";
+import { useAuth } from "@clerk/clerk-react";
 
 export function AppSidebar() {
+  const { getToken } = useAuth();
+
+  const { data: booths, isLoading } = useQuery({
+    queryKey: ["booths"],
+    queryFn: async () => {
+      const res = await fetchAllBooths((await getToken())!);
+
+      if (!res.success) {
+        return null;
+      }
+
+      return res.data;
+    },
+  });
+
   return (
     <Sidebar>
+      <SidebarHeader>
+        <SidebarUser />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>My code booths</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            {booths?.map((x) => {
+              return (
+                <div>
+                  <div>{x.title}</div>
+                </div>
+              );
+            })}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

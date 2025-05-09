@@ -1,55 +1,88 @@
 import { Router } from "express";
 import express from "express";
+import { FetchBoothSchema } from "../../../schema";
 import { prisma } from "../../../db";
 import { requireAuth } from "@clerk/express";
 
-export const fetchAllBoothHandler: Router = express.Router();
+export const fetchBoothHandler: Router = express.Router();
 
-fetchAllBoothHandler.get(
-  "/",
-  requireAuth({ signInUrl: process.env.CLERK_SIGN_IN_URL }),
-  async (req, res) => {
-    const userId = req.auth.userId;
+fetchBoothHandler.get("/", async (req, res) => {
+  const { success, data } = FetchBoothSchema.safeParse(req.body);
+  const userId = req.auth.userId;
 
-    if (!userId) {
+  console.log(userId);
+
+  if (!success) {
+    res
+      .json({
+        message: "Invalid inputs",
+      })
+      .status(411);
+
+    return;
+  }
+
+  if (!userId) {
+    res
+      .json({
+        message: "User ID not provided",
+      })
+      .status(401);
+
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+      include: {
+        booths: true,
+      },
+    });
+
+    const hasAccess = user.booths.some(
+      (x) =>
+        (x.interviewerId === userId || x.interviewerId === userId) &&
+        x.id === data.boothId
+    );
+
+    if (!hasAccess) {
       res
         .json({
-          message: "User ID not provided",
+          message: "User doesn't have access to this booth",
         })
-        .status(401);
+        .status(405);
+    }
 
+    const booth = user.booths.find((x) => x.id === data.boothId);
+
+    if (!booth) {
+      res
+        .json({
+          message: "Booth not found",
+        })
+        .status(404);
+
+      console.log(booth);
       return;
     }
 
-    try {
-      const booths = await prisma.booth.findMany({
-        where: {
-          OR: [
-            {
-              interviewerId: userId,
-            },
-            {
-              intervieweeId: userId,
-            },
-          ],
-        },
-      });
-
-      res.json({
-        message: "Successfully fetched booths",
-        booths,
-      });
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Error occured trying to fetch booths";
-
-      res
-        .json({
-          message,
-        })
-        .status(400);
-    }
+    res.json({
+      message: "Fetched booth!",
+      booth,
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error
+        ? err.message
+        : "Error occured trying to fetch booth";
+    console.log(err);
+    res
+      .json({
+        message,
+      })
+      .status(400);
   }
-);
+});

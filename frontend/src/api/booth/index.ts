@@ -66,10 +66,15 @@ export const deleteBooth = async (boothId: string): Promise<ApiResponse> => {
   }
 };
 
-export const fetchAllBooths = async (): Promise<ApiResponse> => {
+export const fetchAllBooths = async (token: string): Promise<ApiResponse> => {
   try {
     const res = await axios.get(
-      `${process.env.BACKEND_URL}/v1/fetch-all-booths`
+      `${import.meta.env.VITE_BACKEND_URL}/v1/fetch-all-booths`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
     return {
